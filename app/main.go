@@ -6,24 +6,31 @@
 
 package main
 
-import "github.com/maxence-charriere/go-app/v7/pkg/app"
+import (
+	"fmt"
+	"github.com/maxence-charriere/go-app/v7/pkg/app"
+)
 
 // hello is a component that displays a simple "Hello World!". A component is a
 // customizable, independent, and reusable UI element. It is created by
 // embedding app.Compo into a struct.
-type hello struct {
+type rootWrapper struct {
 	app.Compo
 }
 
-// The Render method is where the component appearance is defined. Here, a
-// "Hello World!" is displayed as a heading.
-func (h *hello) Render() app.UI {
-	return app.H1().Text("Hello World!")
+func (h *rootWrapper) Render() app.UI {
+	textarea := app.Textarea()
+	textarea.OnChange(func(ctx app.Context, e app.Event) {
+		fmt.Println(ctx.JSSrc.Get("value").String())
+	})
+
+	return app.Div().Body(
+		app.H1().Text("Hello World!"),
+		textarea,
+	)
 }
 
-// The main function is the entry point of the UI. It is where components are
-// associated with URL paths and where the UI is started.
 func main() {
-	app.Route("/", &hello{}) // hello component is associated with URL path "/".
-	app.Run()                // Launches the PWA.
+	app.Route("/", &rootWrapper{})
+	app.Run()
 }
