@@ -9,11 +9,15 @@ func NewWebHandler() *app.Handler {
 		Description:        "a note app",
 		Icon:               app.Icon{},
 
-		Scripts:            nil,
+		Scripts:            []string{
+			"/web/lib/less@3.12.2/less.min.js",
+		},
 		Styles:             []string{
 			"/web/lib/purecss@2.0.3/pure-min.css",
 			"/web/lib/purecss@2.0.3/grids-responsive-min.css",
 		},
-		RawHeaders: []string{},
+		RawHeaders: []string{
+			`<link rel="stylesheet/less" type="text/css" href="/web/styles.less" />`,
+		},
 	}
 }
