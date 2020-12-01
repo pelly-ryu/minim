@@ -7,12 +7,11 @@
 package main
 
 import (
+	"github.com/pelly-ryu/minim/server/internal"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
-
-	"github.com/maxence-charriere/go-app/v7/pkg/app"
 )
 
 // The main function is the entry of the server. It is where the HTTP handler
@@ -38,10 +37,7 @@ func main() {
 	//
 	// It implements the http.Handler interface so it can seamlessly be used
 	// with the Go HTTP standard library.
-	http.Handle("/", &app.Handler{
-		Name:        "Hello",
-		Description: "An Hello World! example",
-	})
+	http.Handle("/", internal.NewWebHandler())
 
 	err := http.ListenAndServe(":"+strconv.Itoa(port), nil)
 	if err != nil {

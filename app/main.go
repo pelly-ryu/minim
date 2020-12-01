@@ -27,6 +27,11 @@ func (h *rootWrapper) Render() app.UI {
 	return app.Div().Body(
 		app.H1().Text("Hello World!"),
 		textarea,
+		app.Div().Class("pure-g").Body(
+			app.Div().Class("pure-u-1-3").Body(app.P().Text("Thirds")),
+			app.Div().Class("pure-u-1-3").Body(app.P().Text("Thirds")),
+			app.Div().Class("pure-u-1-3").Body(app.P().Text("Thirds")),
+		),
 	)
 }
 
