@@ -7,7 +7,7 @@ type Article struct {
 }
 
 func (c *Article) Render() app.UI {
-	return app.Div().ID("main").Body(
+	return app.Div().ID("article").Body(
 		app.Div().Class("email-content").Body(
 			app.Div().Class("email-content-header pure-g").Body(
 				app.Div().Class("pure-u-1-2").Body(
