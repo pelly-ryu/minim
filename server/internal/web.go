@@ -7,7 +7,9 @@ func NewWebHandler() *app.Handler {
 		Name:               "minim",
 		Title:              "minim",
 		Description:        "a note app",
-		Icon:               app.Icon{},
+		Icon:               app.Icon{
+			Default: "/web/favicon.svg",
+		},
 
 		Scripts:            []string{
 			"/web/lib/less@3.12.2/less.min.js",
