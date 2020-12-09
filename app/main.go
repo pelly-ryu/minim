@@ -7,7 +7,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/maxence-charriere/go-app/v7/pkg/app"
 	"github.com/pelly-ryu/minim/app/internal/component"
 )
@@ -20,11 +19,6 @@ type mainLayout struct {
 }
 
 func (h *mainLayout) Render() app.UI {
-	textarea := app.Textarea()
-	textarea.OnChange(func(ctx app.Context, e app.Event) {
-		fmt.Println(ctx.JSSrc.Get("value").String())
-	})
-
 	return app.Div().ID("layout").Class("content").Body(
 		component.NewNoteList(),
 		&component.Article{},
