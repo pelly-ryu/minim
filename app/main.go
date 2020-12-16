@@ -7,25 +7,20 @@
 package main
 
 import (
+	"fmt"
 	"github.com/maxence-charriere/go-app/v7/pkg/app"
 	"github.com/pelly-ryu/minim/app/internal/component"
 )
 
-// hello is a component that displays a simple "Hello World!". A component is a
-// customizable, independent, and reusable UI element. It is created by
-// embedding app.Compo into a struct.
-type mainLayout struct {
-	app.Compo
-}
-
-func (h *mainLayout) Render() app.UI {
-	return app.Div().ID("layout").Class("content").Body(
-		component.NewNoteList(),
-		&component.Article{},
-	)
-}
-
 func main() {
-	app.Route("/", &mainLayout{})
+	layout := &component.MainLayout{}
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Go program panic:", r)
+			app.Window().Call("alert", "Fatal error occurred. Minim stops here.\nmsg:"+fmt.Sprint(r))
+		}
+	}()
+
+	app.Route("/", layout)
 	app.Run()
 }
