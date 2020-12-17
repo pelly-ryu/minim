@@ -40,6 +40,8 @@ func (l *NoteList) Render() app.UI {
 
 func (l *NoteList) Toggle() {
 	l.opened = !l.opened
+	panic("not implemented")
+	//l.Update() // TODO need to be checked
 }
 
 func (l *NoteList) Opened() bool {
