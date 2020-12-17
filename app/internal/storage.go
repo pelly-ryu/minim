@@ -27,6 +27,23 @@ func StorageGetString(k string) (string, error) {
 	}
 }
 
+func StorageGetNote(noteId string) (Note, error) {
+	v := Note{
+		Title: unassignedString,
+		Body:  unassignedString,
+	}
+	err := Storage.Get(noteId, &v)
+	if err != nil {
+		panic("Cannot use storage: " + err.Error())
+	}
+
+	if v.Title == unassignedString || v.Body == unassignedString {
+		return Note{}, ErrKeyNotExist
+	} else {
+		return v, nil
+	}
+}
+
 func StorageSet(k string, v interface{}) error {
 	return Storage.Set(k, v)
 }
