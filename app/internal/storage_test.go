@@ -2,13 +2,12 @@ package internal
 
 import (
 	"errors"
-	"github.com/maxence-charriere/go-app/v7/pkg/app"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestStorageGet(t *testing.T) {
-	Storage = app.SessionStorage
+	UseSessionStorage()
 	testKey := "a"
 	testValue := "123"
 
@@ -18,7 +17,7 @@ func TestStorageGet(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assert.Nil(t, StorageSet(testKey, testValue))
+	assert.Nil(t, storageSet(testKey, testValue))
 	v, err := StorageGetString(testKey)
 	assert.Nil(t, err)
 	assert.Equal(t, testValue, v)

@@ -32,20 +32,23 @@ func NewArticle() *Article {
 	}
 }
 
-func LoadArticle(noteId string) *Article {
+func (a *Article) Load(noteId string) {
 	note, err := internal.StorageGetNote(noteId)
 	if err != nil {
 		if errors.Is(err, internal.ErrKeyNotExist) {
 			panic("unexpected failure of getting note:" + err.Error())
 		}
+		panic(err)
 	}
 
-	return &Article{
-		noteId: noteId,
-		isNew:  false,
-		title:  note.Title,
-		body:   note.Body,
-	}
+	a.Lock()
+	a.noteId = noteId
+	a.isNew = false
+	a.title = note.Title
+	a.body = note.Body
+	a.Unlock()
+
+	a.Update()
 }
 
 func (a *Article) Render() app.UI {
@@ -102,7 +105,7 @@ func (a *Article) onTitleChange(ctx app.Context, _ app.Event) {
 
 	ctx.JSSrc.Set("className", "")
 
-	err := internal.StorageSet(a.noteId, internal.Note{
+	err := internal.StorageSetNote(a.noteId, internal.Note{
 		Title: title,
 		Body:  body,
 	})
@@ -118,7 +121,7 @@ func (a *Article) onBodyChange(ctx app.Context, _ app.Event) {
 	title := a.title
 	a.Unlock()
 
-	err := internal.StorageSet(a.noteId, internal.Note{
+	err := internal.StorageSetNote(a.noteId, internal.Note{
 		Title: title,
 		Body:  body,
 	})

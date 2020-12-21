@@ -1,6 +1,9 @@
 package component
 
-import "github.com/maxence-charriere/go-app/v7/pkg/app"
+import (
+	"github.com/maxence-charriere/go-app/v7/pkg/app"
+	"github.com/pelly-ryu/minim/app/internal"
+)
 
 type NoteList struct {
 	app.Compo
@@ -16,32 +19,46 @@ func NewNoteList() *NoteList {
 
 func (l *NoteList) Render() app.UI {
 	if !l.opened {
-		return app.Aside().ID("note-list").Class("closed")
+		return app.Aside().ID("note-list").Class("closed").
+			OnClick(func(ctx app.Context, e app.Event) {
+				l.Toggle()
+			})
+	}
+
+	ids, err := internal.StorageListNoteId()
+	if err != nil {
+		panic(err)
+	}
+
+	var noteListEl []app.UI
+	for _, id := range ids {
+		n, err := internal.StorageGetNote(id)
+		if err != nil {
+			panic(err)
+		}
+
+		short := n.Body
+		if len(n.Body) > 50 {
+			short = n.Body[:50]
+		}
+
+		el := app.Div().Class("note-list-item note-list-item-selected").Body(
+			app.H5().Class("note-list-name").Text("Tilo Mitra"),
+			app.H4().Class("note-list-subject").Text(n.Title),
+			app.P().Class("note-list-desc").Text(short),
+		)
+
+		noteListEl = append(noteListEl, el)
 	}
 
 	return app.Aside().ID("note-list").Class("pure-u-1").Body(
-		app.Div().Class("email-item email-item-selected").Body(
-			app.H5().Class("email-name").Text("Tilo Mitra"),
-			app.H4().Class("email-subject").Text("Hello from Toronto"),
-			app.P().Class("email-desc").Text("Hey, I just wanted to check in with you from Toronto. I got here earlier today."),
-		),
-		app.Div().Class("email-item email-item-unread").Body(
-			app.H5().Class("email-name").Text("Tilo Mitra"),
-			app.H4().Class("email-subject").Text("Hello from Toronto"),
-			app.P().Class("email-desc").Text("Hey, I just wanted to check in with you from Toronto. I got here earlier today."),
-		),
-		app.Div().Class("email-item").Body(
-			app.H5().Class("email-name").Text("Tilo Mitra"),
-			app.H4().Class("email-subject").Text("Hello from Toronto"),
-			app.P().Class("email-desc").Text("Hey, I just wanted to check in with you from Toronto. I got here earlier today."),
-		),
+		noteListEl...
 	)
 }
 
 func (l *NoteList) Toggle() {
 	l.opened = !l.opened
-	panic("not implemented")
-	//l.Update() // TODO need to be checked
+	l.Update()
 }
 
 func (l *NoteList) Opened() bool {
