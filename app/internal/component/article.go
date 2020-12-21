@@ -1,6 +1,7 @@
 package component
 
 import (
+	"errors"
 	"github.com/google/uuid"
 	"github.com/maxence-charriere/go-app/v7/pkg/app"
 	"github.com/pelly-ryu/minim/app/internal"
@@ -15,7 +16,7 @@ const (
 
 type Article struct {
 	app.Compo
-	sync.Mutex
+	sync.RWMutex
 
 	noteId string // fixed when initiated
 
@@ -32,17 +33,43 @@ func NewArticle() *Article {
 }
 
 func LoadArticle(noteId string) *Article {
-	panic("not implemented")
+	note, err := internal.StorageGetNote(noteId)
+	if err != nil {
+		if errors.Is(err, internal.ErrKeyNotExist) {
+			panic("unexpected failure of getting note:" + err.Error())
+		}
+	}
+
+	return &Article{
+		noteId: noteId,
+		isNew:  false,
+		title:  note.Title,
+		body:   note.Body,
+	}
 }
 
 func (a *Article) Render() app.UI {
+	a.RLock()
+	isNew := a.isNew
+	titleText := a.title
+	bodyText := a.body
+	a.RUnlock()
+
+	titleEl := app.H1().ID(articleTitleId).
+		ContentEditable(true).
+		OnInput(a.onTitleChange).
+		Text(titleText)
+
+	if isNew {
+		titleEl.Class("new")
+	} else {
+		titleEl.Class("")
+	}
+
 	return app.Div().ID("article").Body(
 		app.Div().Class("article-header pure-g").Body(
-			app.Div().Class("pure-u-1-2").Body(
-				app.H1().ID(articleTitleId).
-					ContentEditable(true).
-					OnInput(a.onTitleChange).
-					Text("New note..."),
+			app.Div().Class("pure-u-1-2").Style("position", "relative").Body(
+				titleEl,
 				app.P().Class("article-subtitle").Body(
 					app.Span().Text("3:56pm, April 3, 2012"),
 				),
@@ -51,7 +78,7 @@ func (a *Article) Render() app.UI {
 		app.Div().ID(articleBodyId).
 			ContentEditable(true).
 			OnInput(a.onBodyChange).
-			Body(app.P().Text("")),
+			Body(app.P().Text(bodyText)),
 	)
 }
 
