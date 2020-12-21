@@ -100,6 +100,8 @@ func (a *Article) onTitleChange(ctx app.Context, _ app.Event) {
 	body := a.body
 	a.Unlock()
 
+	ctx.JSSrc.Set("className", "")
+
 	err := internal.StorageSet(a.noteId, internal.Note{
 		Title: title,
 		Body:  body,

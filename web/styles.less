@@ -122,6 +122,12 @@ a {
 
 #article-title {
   margin: 0.5em 0 0;
+
+  &.new::after {
+    content: "New note...";
+    position: absolute;
+    color: #aaa;
+  }
 }
 
 .article-subtitle {
