@@ -1,21 +1,33 @@
 package component
 
 import (
-	"errors"
 	"github.com/google/uuid"
 	"github.com/maxence-charriere/go-app/v7/pkg/app"
 	"github.com/pelly-ryu/minim/app/internal"
+	"net/url"
+	"sync"
+)
+
+const (
+	articleTitleId = "article-title"
+	articleBodyId  = "article-body"
 )
 
 type Article struct {
 	app.Compo
+	sync.Mutex
 
-	noteId string
+	noteId string // fixed when initiated
+
+	isNew bool
+	title string
+	body  string
 }
 
 func NewArticle() *Article {
 	return &Article{
 		noteId: uuid.New().String(),
+		isNew:  true,
 	}
 }
 
@@ -27,7 +39,7 @@ func (a *Article) Render() app.UI {
 	return app.Div().ID("article").Body(
 		app.Div().Class("article-header pure-g").Body(
 			app.Div().Class("pure-u-1-2").Body(
-				app.H1().Class("article-title").
+				app.H1().ID(articleTitleId).
 					ContentEditable(true).
 					OnInput(a.onTitleChange).
 					Text("New note..."),
@@ -36,26 +48,32 @@ func (a *Article) Render() app.UI {
 				),
 			),
 		),
-		app.Div().Class("article-body").
+		app.Div().ID(articleBodyId).
 			ContentEditable(true).
 			OnInput(a.onBodyChange).
 			Body(app.P().Text("")),
 	)
 }
 
+func (a *Article) OnNav(_ app.Context, _ *url.URL) {
+	a.Lock()
+	isNew := a.isNew
+	a.isNew = false
+	a.Unlock()
+
+	if isNew {
+		app.Window().GetElementByID(articleTitleId).Call("focus")
+	}
+}
+
 func (a *Article) onTitleChange(ctx app.Context, _ app.Event) {
 	title := ctx.JSSrc.Get("innerText").String()
-	body := ""
-	note, err := internal.StorageGetNote(a.noteId)
-	if err != nil {
-		if !errors.Is(err, internal.ErrKeyNotExist) {
-			panic("unexpected failure of getting note:" + err.Error())
-		}
-	} else {
-		body = note.Body
-	}
+	a.Lock()
+	a.title = title
+	body := a.body
+	a.Unlock()
 
-	err = internal.StorageSet(a.noteId, internal.Note{
+	err := internal.StorageSet(a.noteId, internal.Note{
 		Title: title,
 		Body:  body,
 	})
@@ -65,18 +83,13 @@ func (a *Article) onTitleChange(ctx app.Context, _ app.Event) {
 }
 
 func (a *Article) onBodyChange(ctx app.Context, _ app.Event) {
-	title := ""
 	body := ctx.JSSrc.Get("innerHTML").String()
-	note, err := internal.StorageGetNote(a.noteId)
-	if err != nil {
-		if !errors.Is(err, internal.ErrKeyNotExist) {
-			panic("unexpected failure of getting note:" + err.Error())
-		}
-	} else {
-		title = note.Title
-	}
+	a.Lock()
+	a.body = body
+	title := a.title
+	a.Unlock()
 
-	err = internal.StorageSet(a.noteId, internal.Note{
+	err := internal.StorageSet(a.noteId, internal.Note{
 		Title: title,
 		Body:  body,
 	})
