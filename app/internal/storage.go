@@ -6,16 +6,8 @@ import (
 	"strings"
 )
 
-type storageCategory string
-
-const (
-	localStorage   storageCategory = "localStorage"
-	sessionStorage storageCategory = "sessionStorage"
-)
-
 var (
-	storage  = app.LocalStorage
-	category = localStorage
+	storage = app.LocalStorage
 )
 
 var ErrKeyNotExist = errors.New("key doesn't exist in the storage")
@@ -27,12 +19,10 @@ const (
 
 func UseLocalStorage() {
 	storage = app.LocalStorage
-	category = localStorage
 }
 
 func UseSessionStorage() {
 	storage = app.SessionStorage
-	category = sessionStorage
 }
 
 func StorageGetString(k string) (string, error) {
@@ -50,11 +40,12 @@ func StorageGetString(k string) (string, error) {
 }
 
 func StorageListNoteId() ([]string, error) {
-	length := app.Window().Get(string(category)).Get("length").Int()
-
 	var ret []string
-	for i := 0; i < length; i++ {
-		k := app.Window().Get(string(category)).Call("key", i).String()
+	for i := 0; i < storage.Len(); i++ {
+		k, err := storage.Key(i)
+		if err != nil {
+			panic("failed to iterate over local storage: " + err.Error())
+		}
 		if isNoteKey(k) {
 			ret = append(ret, toNoteIdFromKey(k))
 		}
